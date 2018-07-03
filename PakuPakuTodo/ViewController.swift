@@ -8,37 +8,51 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UITableViewDataSource, UITableViewDelegate {
 
-    
-    @IBOutlet weak var textField: UITextField!
+    var todoList = [String]()
+
+    @IBOutlet weak var tableView: UITableView!
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        //表示時にデータ格納
-        let userDefaults = UserDefaults.standard
-        let data = MyData()
-        data.valueString = "test"
-        
-        //シリアライズ
-        let archiveData = NSKeyedArchiver.archivedData(withRootObject: data)
-        userDefaults.set(archiveData, forKey: "data")
-        userDefaults.synchronize()
-        
-        //デシリアライズ
-        if let storedData = userDefaults.object(forKey: "data") as? Data {
-            if let unarchivedData =
-                NSKeyedUnarchiver.unarchiveObject(with:storedData) as? MyData {
-                if let valueString = unarchivedData.valueString {
-                    print("デシリアライズデータ:" + valueString)
-                }
-            }
-        }
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-}
+    
+    @IBAction func tapAddButton(_ sender: Any) {
+        let alertController = UIAlertController(title: "Todo追加", message: "todoを入力してください", preferredStyle: UIAlertControllerStyle.alert)
+        alertController.addTextField(configurationHandler: nil)
+        
+        let okAction = UIAlertAction(title: "OK", style: UIAlertActionStyle.default) { (action: UIAlertAction) in
+            if let textField = alertController.textFields?.first {
+                self.todoList.insert(textField.text!, at: 0)
+                
+                self.tableView.insertRows(at: [IndexPath(row: 0, section: 0)], with: UITableViewRowAnimation.right)
+            }
+        }
 
+        alertController.addAction(okAction)
+                                        
+        let cancelButton = UIAlertAction(title: "CANSEL", style: UIAlertActionStyle.cancel, handler: nil)
+                                        
+        alertController.addAction(cancelButton)
+                                        
+        present(alertController, animated: true, completion: nil)
+    }
+
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return todoList.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "todoCell", for: indexPath)
+        
+        let todoTitle = todoList[indexPath.row]
+        
+        cell.textLabel?.text = todoTitle
+        return cell
+    }
+
+}
