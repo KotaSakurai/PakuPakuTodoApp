@@ -15,10 +15,24 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        //表示時にデータ格納
         let userDefaults = UserDefaults.standard
+        let data = MyData()
+        data.valueString = "test"
         
-        if let value = userDefaults.string(forKey: "text") {
-            textField.text = value
+        //シリアライズ
+        let archiveData = NSKeyedArchiver.archivedData(withRootObject: data)
+        userDefaults.set(archiveData, forKey: "data")
+        userDefaults.synchronize()
+        
+        //デシリアライズ
+        if let storedData = userDefaults.object(forKey: "data") as? Data {
+            if let unarchivedData =
+                NSKeyedUnarchiver.unarchiveObject(with:storedData) as? MyData {
+                if let valueString = unarchivedData.valueString {
+                    print("デシリアライズデータ:" + valueString)
+                }
+            }
         }
     }
 
@@ -26,14 +40,5 @@ class ViewController: UIViewController {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-
-    @IBAction func tapActionButton(_ sender: Any) {
-        let userDefaults = UserDefaults.standard
-        
-        userDefaults.set(textField.text, forKey: "text")
-        userDefaults.synchronize()
-        
-    }
-    
 }
 
